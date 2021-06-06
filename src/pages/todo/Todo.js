@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { auth_login, post_auth, put_auth, delete_auth } from './Auth';
 import { Header1, InputContainer, Input, PlansContainer } from './styled-component';
 import { GreenButton } from '../../components/styled-components';
 import Plan from '../../components/Plan';
@@ -7,11 +8,12 @@ function Todo() {
     const [plans, setPlans] = useState([]);
     const [order, setOrder] = useState(0);
     const [inputTitle, setInputTitle] = useState('');
+    const [token, setToken] = useState('');
     
     //manage local data -----------------------------------------
-    const addPlan = () => { 
+    const addPlan = async () => { 
         //add a plan to plans array
-        if(!inputIsValid(inputTitle, false)) return false;
+        if(! await inputIsValid(inputTitle, false)) return false;
         let newPlan = {
             id: order,
             plan: inputTitle,
@@ -20,33 +22,38 @@ function Todo() {
         plans.push(newPlan);
         setInputTitle('');
 
-        post_no_auth(newPlan);
+        //await post_no_auth(newPlan);
+        await post_auth(newPlan.plan, token);
+        get_no_auth();
     };
 
-    const editPlan = (_id, title) => { 
+    const editPlan = async (_id, title) => { 
         //edit a plan in plans array given id and a new value
-        console.log(_id);
-        console.log(title);
-        if(!inputIsValid(title, true)) return false;
+        if(! await inputIsValid(title, true)) return false;
         // let newPlans = [...plans];
         // let targetPlan = newPlans.find(a => a._id===_id );
         // console.log(targetPlan);
         // targetPlan.title = title;
         // setPlans(newPlans);
-        put_no_auth(_id, title);
+        
+        //await put_no_auth(_id, title);
+        await put_auth(_id, title, token);
+        get_no_auth();
     };
 
-    const deletePlan = (id) => {
+    const deletePlan = async (id) => {
         //delete a plan from plans array given an id
 
         // let newPlans = [...plans];
         // newPlans = newPlans.filter(a => a.id !== id);
         // setPlans(newPlans);
 
-        delete_no_auth(id);
+        //await delete_no_auth(id);
+        await delete_auth(id, token);
+        get_no_auth();
     };
 
-    const inputIsValid = (input, canBeNull) => {
+    const inputIsValid = async (input, canBeNull) => {
         //canBeNull==true if called from editPlan()
         //canBeNull==false if called from addPlan()
         let isValid = true;
@@ -63,8 +70,10 @@ function Todo() {
 
     //Level1 : No auth ------------------------------------------
     useEffect(() => {
+        const token = auth_login();
+        setToken(token);
         get_no_auth();
-    }, [])
+    },[])
     
     const get_no_auth = async () => {
         const response = await fetch('http://206.189.89.204/app/no_auth/todos/', {
@@ -74,8 +83,7 @@ function Todo() {
                 'Content-Type' : 'application/json'}
             }
         );
-        let todos = await response.json();
-        // console.log(todos.data);        
+        let todos = await response.json();       
         let tmpPlan = {};
         let tmpPlans = [];
         todos.data.map((todo) => {
@@ -99,7 +107,6 @@ function Todo() {
                 "title": newPlan.plan
             })
         });
-        get_no_auth();
     };
 
     const put_no_auth = async (_id, title) => {
@@ -113,7 +120,6 @@ function Todo() {
                 "title": title
             })
         });
-        get_no_auth();
     };
 
     const delete_no_auth = async (_id) => {
@@ -123,11 +129,7 @@ function Todo() {
                 'Accept': 'application/json',
                 'Content-Type' : 'application/json'}
         });
-        get_no_auth();
     };
-
-    //Level2: Auth
-    
 
     return (
         <div>
