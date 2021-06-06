@@ -3,6 +3,7 @@ import './App.css';
 // import React, { useState, useEffect } from 'react';
 // import Plan from './components/Plan';
 import Todo from './pages/todo/Todo';
+// import StoreData from './pages/todo/StoreData';
 
 // var buttonColor = '#f1f1f1';
 
@@ -85,6 +86,7 @@ function App() {
   return (
     <div>
       <Todo/>
+      {/* <StoreData/> */}
     </div>
     // <div>
     //   <div>

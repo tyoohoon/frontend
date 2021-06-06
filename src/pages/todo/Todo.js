@@ -1,39 +1,49 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Header1, InputContainer, Input, PlansContainer } from './styled-component';
 import { GreenButton } from '../../components/styled-components';
 import Plan from '../../components/Plan';
 
 function Todo() {
     const [plans, setPlans] = useState([]);
-    const [planId, setPlanId] = useState(0);
-    const [inputPlan, setInputPlan] = useState('');
-
+    const [order, setOrder] = useState(0);
+    const [inputTitle, setInputTitle] = useState('');
+    
+    //manage local data -----------------------------------------
     const addPlan = () => { 
         //add a plan to plans array
-        if(!inputIsValid(inputPlan, false)) return false;
+        if(!inputIsValid(inputTitle, false)) return false;
         let newPlan = {
-            id: planId,
-            plan: inputPlan,
+            id: order,
+            plan: inputTitle,
         };
-        setPlanId(planId + 1);
+        setOrder(order + 1);
         plans.push(newPlan);
-        setInputPlan('');
+        setInputTitle('');
+
+        post_no_auth(newPlan);
     };
 
-    const editPlan = (id, value) => { 
+    const editPlan = (_id, title) => { 
         //edit a plan in plans array given id and a new value
-        if(!inputIsValid(value, true)) return false;
-        let newPlans = [...plans];
-        let targetPlan = newPlans.find(a => a.id===id );
-        targetPlan.plan = value;
-        setPlans(newPlans);
+        console.log(_id);
+        console.log(title);
+        if(!inputIsValid(title, true)) return false;
+        // let newPlans = [...plans];
+        // let targetPlan = newPlans.find(a => a._id===_id );
+        // console.log(targetPlan);
+        // targetPlan.title = title;
+        // setPlans(newPlans);
+        put_no_auth(_id, title);
     };
 
     const deletePlan = (id) => {
         //delete a plan from plans array given an id
-        let newPlans = [...plans];
-        newPlans = newPlans.filter(a => a.id !== id);
-        setPlans(newPlans);
+
+        // let newPlans = [...plans];
+        // newPlans = newPlans.filter(a => a.id !== id);
+        // setPlans(newPlans);
+
+        delete_no_auth(id);
     };
 
     const inputIsValid = (input, canBeNull) => {
@@ -51,6 +61,74 @@ function Todo() {
         return isValid;
     };
 
+    //Level1 : No auth ------------------------------------------
+    useEffect(() => {
+        get_no_auth();
+    }, [])
+    
+    const get_no_auth = async () => {
+        const response = await fetch('http://206.189.89.204/app/no_auth/todos/', {
+            method: 'GET', 
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type' : 'application/json'}
+            }
+        );
+        let todos = await response.json();
+        // console.log(todos.data);        
+        let tmpPlan = {};
+        let tmpPlans = [];
+        todos.data.map((todo) => {
+            tmpPlan = {
+                order: todo._id,
+                title: todo.title,
+            }
+            tmpPlans.push(tmpPlan);
+        });
+        setPlans(tmpPlans);
+    };
+
+    const post_no_auth = async (newPlan) => {
+        const response = await fetch('http://206.189.89.204/app/no_auth/todos/', {
+            method: 'POST', 
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type' : 'application/json'}
+            ,
+            body: JSON.stringify({
+                "title": newPlan.plan
+            })
+        });
+        get_no_auth();
+    };
+
+    const put_no_auth = async (_id, title) => {
+        const response = await fetch(`http://206.189.89.204/app/no_auth/todos/${_id}`, {
+            method: 'PUT', 
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type' : 'application/json'}
+            ,
+            body: JSON.stringify({
+                "title": title
+            })
+        });
+        get_no_auth();
+    };
+
+    const delete_no_auth = async (_id) => {
+        const response = await fetch(`http://206.189.89.204/app/no_auth/todos/${_id}`, {
+            method: 'DELETE', 
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type' : 'application/json'}
+        });
+        get_no_auth();
+    };
+
+    //Level2: Auth
+    
+
     return (
         <div>
             <Header1>What's the Plan for Today?</Header1>
@@ -58,8 +136,8 @@ function Todo() {
                 <Input
                     type='text'
                     placeholder='Enter some plan'
-                    value={inputPlan}
-                    onChange={(e) => setInputPlan(e.target.value)}
+                    value={inputTitle}
+                    onChange={(e) => setInputTitle(e.target.value)}
                     onKeyDown={(e) => {
                         if(e.key === 'Enter') addPlan()}
                     }
@@ -73,10 +151,10 @@ function Todo() {
                 {
                     plans.map((a) =>
                         <Plan 
-                            key={a.id}
-                            plan={a.plan}
-                            editPlan={(newValue) => editPlan(a.id, newValue)}
-                            deletePlan={() => deletePlan(a.id)}
+                            key={a.order}
+                            plan={a.title}
+                            editPlan={(newTitle) => editPlan(a.order, newTitle)}
+                            deletePlan={() => deletePlan(a.order)}
                         />
                     )
                 }
