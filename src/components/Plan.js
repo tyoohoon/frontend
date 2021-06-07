@@ -15,7 +15,6 @@ function Plan(props) {
         setPrevInput(input);
     }
     const editPlan = () => {
-        // only change display 
         setIsUpdate(true);
     }
     const deletePlan = () => {

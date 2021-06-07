@@ -14,9 +14,8 @@ export const auth_login = async () => {
     return body.token;
 };
 
-export const post_auth = async (title, tokenx) => {
+export const post_auth = async (title, token) => {
     try {
-        const token = await auth_login();
         const response = await fetch('http://206.189.89.204/app/with_auth/todos/', {
             method: 'POST', 
             headers: {
@@ -33,9 +32,8 @@ export const post_auth = async (title, tokenx) => {
     }
 }
 
-export const put_auth = async (_id, title, tokenx) => {
+export const put_auth = async (_id, title, token) => {
     try{
-        const token = await auth_login();
         const response = await fetch(`http://206.189.89.204/app/with_auth/todos/${_id}`, {
             method: 'PUT', 
             headers: {
@@ -53,9 +51,8 @@ export const put_auth = async (_id, title, tokenx) => {
     }
 }
 
-export const delete_auth = async (_id, tokenx) => {
+export const delete_auth = async (_id, token) => {
     try{
-        const token = await auth_login();
         const response = await fetch(`http://206.189.89.204/app/with_auth/todos/${_id}`, {
             method: 'DELETE', 
             headers: {

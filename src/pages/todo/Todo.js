@@ -9,10 +9,18 @@ function Todo() {
     const [order, setOrder] = useState(0);
     const [inputTitle, setInputTitle] = useState('');
     const [token, setToken] = useState('');
-    
-    //manage local data -----------------------------------------
+
+    useEffect(() => {
+        const fetchToken = async () => {
+            const token = await auth_login();
+            setToken(token);
+            console.log(token);
+        };
+        fetchToken();
+        get_no_auth();
+    },[]);
+
     const addPlan = async () => { 
-        //add a plan to plans array
         if(! await inputIsValid(inputTitle, false)) return false;
         let newPlan = {
             id: order,
@@ -28,7 +36,6 @@ function Todo() {
     };
 
     const editPlan = async (_id, title) => { 
-        //edit a plan in plans array given id and a new value
         if(! await inputIsValid(title, true)) return false;
         // let newPlans = [...plans];
         // let targetPlan = newPlans.find(a => a._id===_id );
@@ -42,8 +49,6 @@ function Todo() {
     };
 
     const deletePlan = async (id) => {
-        //delete a plan from plans array given an id
-
         // let newPlans = [...plans];
         // newPlans = newPlans.filter(a => a.id !== id);
         // setPlans(newPlans);
@@ -67,14 +72,8 @@ function Todo() {
             alert('The input can A-Z, a-z, ก-ฮ, and 0-9');
         return isValid;
     };
-
-    //Level1 : No auth ------------------------------------------
-    useEffect(() => {
-        const token = auth_login();
-        setToken(token);
-        get_no_auth();
-    },[])
     
+    //Level1 : No auth ------------------------------------------
     const get_no_auth = async () => {
         const response = await fetch('http://206.189.89.204/app/no_auth/todos/', {
             method: 'GET', 
